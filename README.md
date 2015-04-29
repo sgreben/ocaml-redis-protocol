@@ -40,8 +40,7 @@ Pretty-printing redis values:
     2) 123
     3) ERR Bar
 
-For the full API see the [.mli](https://github.com/sgreben/ocaml-redis-protocol/src/redis_protocol.mli).
-
+For the full API see the [.mli](https://github.com/sgreben/ocaml-redis-protocol/bolb/master/src/redis_protocol.mli).
 
 ## Linking with your app
 
