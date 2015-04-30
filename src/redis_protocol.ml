@@ -9,10 +9,7 @@ module Resp = struct
 
   exception Simple_string_contains_CR_or_LF
 
-  let crlf = "\r\n"
-
-  let rec encoding_length t =
-    match t with
+  let rec encoding_length = function
     | Simple_string s      -> 3+Bytes.length s
     | Error s              -> 3+Bytes.length s
     | Integer s            -> 3+Bytes.length s
@@ -27,6 +24,7 @@ module Resp = struct
 
   let rec encode_to_buffer_exn t b =
     let add_bytes s = Buffer.add_bytes b s in
+    let crlf = "\r\n" in
     match t with
     | Simple_string s ->
       ensure_no_crlf s; add_bytes "+"; add_bytes s; add_bytes crlf

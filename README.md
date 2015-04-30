@@ -26,12 +26,11 @@ Encoding redis commands to RESP:
     >> open Redis_protocol
     >> Redis_command.build "SET" ["FOO_KEY";"BAR_VALUE"]
         |> Resp.encode_exn
-        |> String.escaped
-        |> Printf.printf "\"%s\"";;
     "*3\r\n$3\r\nSET\r\n$6\r\nFOO_KEY\r\n$8\r\nBAR_VALUE\r\n"
 
 Pretty-printing redis values:
 
+    >> open Redis_protocol
     >> "*3\r\n+Foo\r\n:123\r\n-Bar\r\n"
        |> Redis_protocol.Resp.decode_exn
        |> Redis_protocol.to_string_hum
