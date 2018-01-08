@@ -1,0 +1,3 @@
+_build
+property_tests.native
+redis_protocol.docdir
