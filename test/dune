@@ -1,0 +1,4 @@
+(test
+  (name property_tests)
+  (libraries redis_protocol)
+)

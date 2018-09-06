@@ -1,3 +1,5 @@
 _build
 property_tests.native
 redis_protocol.docdir
+redis_protocol.install
+*.merlin
