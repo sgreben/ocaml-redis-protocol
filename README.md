@@ -47,25 +47,32 @@ Assuming you've installed it (see below), you can use the library by loading the
 
     ocamlbuild -use-ocamlfind -pkg redis-protocol my_app.native
 
-
 ## Build
 
-ocaml-redis-protocol is built with ocamlbuild and has a Makefile that calls it. To build the libary and the docs, do
+ocaml-redis-protocol is built with [dune](https://github.com/ocaml/dune). To build the libary:
 
-    $ make
+    dune build
 
-The documentation is in `redis_protocol.docdir/index.html`, so to view it use e.g.
+The resulting library files will be in `_build/default/src`
 
-    $ google-chrome redis_protocol.docdir/index.html
+### Docs
+
+Then to compile the html docs:
+
+    dune build @doc
+
+The resulting documentation files will be in `_build/default/_doc`
+
+An HTML page is generated with _odoc_ - browse it (e.g. with _Google Chrome_):
+
+    google-chrome ./_build/default/_doc/index.html
 
 ## Test
 
-    $ make test
+    dune runtest
 
 ## Install
 
-ocaml-redis-protocol supports ocamlfind. To install, just do
-
-    $ make install
+    dune install
 
 If you're running opam, the library will be installed into the opam-defined lib path.
