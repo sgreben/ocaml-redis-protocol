@@ -2,10 +2,10 @@
 
 (** Redis protocol messages *)
 type t =
-  | Simple_string of bytes (** Simple (binary-unsafe) strings *)
-  | Error of bytes
-  | Integer of bytes
-  | Bulk_string of bytes option (** Bulk (binary-safe) string if Some and null string if None *)
+  | Simple_string of string (** Simple (binary-unsafe) strings *)
+  | Error of string
+  | Integer of string
+  | Bulk_string of string option (** Bulk (binary-safe) string if Some and null string if None *)
   | Array of t array option (** Array if Some and null array if None *)
 
 (** Return a string representation of the protocol message (as OCaml source) *)
@@ -19,19 +19,19 @@ val to_string_hum : t -> string
 module Resp : sig
 
   (** Return the encoding of the message as a byte string. *)
-  val encode : t -> bytes option
+  val encode : t -> string option
 
   (** Return the encoding of the message as a byte string. *)
-  val encode_exn : t -> bytes
+  val encode_exn : t -> string
 
   (** Append the encoding of the message to the given buffer. *)
   val encode_to_buffer_exn : t -> Buffer.t -> unit
 
   (** Try to decode the given byte string. *)
-  val decode : bytes -> t option
+  val decode : string -> t option
 
   (** Try to decode the given byte string (throws [Invalid_encoding] and [Trailing_garbage].  *)
-  val decode_exn : bytes -> t
+  val decode_exn : string -> t
 
   (** The message could not be encoded because a simple string contains a CR or LF character. *)
   exception Simple_string_contains_CR_or_LF
@@ -50,29 +50,29 @@ module Redis_command : sig
 
   (** Build a command with an arbitrary number of arguments, e.g.
     {[build "SET" ["fooKey";"barValue"]]} *)
-  val build : command:bytes -> bytes list -> t
+  val build : command:string -> string list -> t
 
   (** Build a command with no arguments, e.g.
     {[build0 "SHUTDOWN"]} *)
-  val build0 : bytes -> t
+  val build0 : string -> t
 
   (** Build a command with 1 argument, e.g.
     {[build1 "INCR" "intKey"]} *)
-  val build1 : command:bytes -> bytes -> t
+  val build1 : command:string -> string -> t
 
   (** Build a command with 2 arguments *)
-  val build2 : command:bytes -> bytes -> bytes -> t
+  val build2 : command:string -> string -> string -> t
 
   (** Build a command with 3 arguments *)
-  val build3 : command:bytes -> bytes -> bytes -> bytes -> t
+  val build3 : command:string -> string -> string -> string -> t
 
   (** Build a command with 4 arguments *)
-  val build4 : command:bytes -> bytes -> bytes -> bytes -> bytes -> t
+  val build4 : command:string -> string -> string -> string -> string -> t
 
   (** Build a command with 5 arguments *)
-  val build5 : command:bytes -> bytes -> bytes -> bytes -> bytes -> bytes -> t
+  val build5 : command:string -> string -> string -> string -> string -> string -> t
 
   (** Build a command with 6 arguments *)
-  val build6 : command:bytes -> bytes -> bytes -> bytes -> bytes -> bytes -> bytes -> t
+  val build6 : command:string -> string -> string -> string -> string -> string -> string -> t
 
 end
