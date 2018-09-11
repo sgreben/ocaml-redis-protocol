@@ -1,3 +1,0 @@
-(library
-  (name        redis_protocol)
-  (public_name redis_protocol))

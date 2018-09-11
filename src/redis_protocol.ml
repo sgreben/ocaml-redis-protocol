@@ -1,8 +1,8 @@
 type t =
-  | Simple_string of string
-  | Error of string
-  | Integer of string
-  | Bulk_string of string option
+  | Simple_string of bytes
+  | Error of bytes
+  | Integer of bytes
+  | Bulk_string of bytes option
   | Array of t array option
 
 module Resp = struct
@@ -10,38 +10,38 @@ module Resp = struct
   exception Simple_string_contains_CR_or_LF
 
   let rec encoding_length = function
-    | Simple_string s      -> 3+String.length s
-    | Error s              -> 3+String.length s
-    | Integer s            -> 3+String.length s
+    | Simple_string s      -> 3+Bytes.length s
+    | Error s              -> 3+Bytes.length s
+    | Integer s            -> 3+Bytes.length s
     | Bulk_string None     -> 5
-    | Bulk_string (Some s) -> 6+String.length (String.length s |> string_of_int)+String.length s
+    | Bulk_string (Some s) -> 6+Bytes.length (Bytes.length s |> string_of_int)+Bytes.length s
     | Array None           -> 5
-    | Array (Some ss)      -> 3+(Array.length ss |> string_of_int |> String.length)+Array.fold_left (fun n t -> n+encoding_length t) 0 ss
+    | Array (Some ss)      -> 3+(Array.length ss |> string_of_int |> Bytes.length)+Array.fold_left (fun n t -> n+encoding_length t) 0 ss
 
-  let ensure_no_crlf = String.iter (function
+  let ensure_no_crlf = Bytes.iter (function
     | '\r' | '\n' -> raise Simple_string_contains_CR_or_LF
     | _ -> ())
 
   let rec encode_to_buffer_exn t b =
-    let add_string s = Buffer.add_string b s in
+    let add_bytes s = Buffer.add_bytes b s in
     let crlf = "\r\n" in
     match t with
     | Simple_string s ->
-      ensure_no_crlf s; add_string "+"; add_string s; add_string crlf
+      ensure_no_crlf s; add_bytes "+"; add_bytes s; add_bytes crlf
     | Error s ->
-      ensure_no_crlf s; add_string "-"; add_string s; add_string crlf
+      ensure_no_crlf s; add_bytes "-"; add_bytes s; add_bytes crlf
     | Integer s ->
-      ensure_no_crlf s; add_string ":"; add_string s; add_string crlf
+      ensure_no_crlf s; add_bytes ":"; add_bytes s; add_bytes crlf
     | Bulk_string (Some s) ->
-      let n = String.length s |> string_of_int in
-      add_string "$"; add_string n; add_string crlf; add_string s; add_string crlf
+      let n = Bytes.length s |> string_of_int in
+      add_bytes "$"; add_bytes n; add_bytes crlf; add_bytes s; add_bytes crlf
     | Array (Some ss) ->
       let n = Array.length ss |> string_of_int in
-      add_string "*"; add_string n; add_string crlf; Array.iter (fun t -> encode_to_buffer_exn t b) ss
-    | Bulk_string None -> add_string "$-1\r\n"
-    | Array None -> add_string "*-1\r\n"
+      add_bytes "*"; add_bytes n; add_bytes crlf; Array.iter (fun t -> encode_to_buffer_exn t b) ss
+    | Bulk_string None -> add_bytes "$-1\r\n"
+    | Array None -> add_bytes "*-1\r\n"
 
-  let encode_exn t = encoding_length t |> Buffer.create |> fun b -> encode_to_buffer_exn t b; Buffer.to_bytes b |> Bytes.to_string
+  let encode_exn t = encoding_length t |> Buffer.create |> fun b -> encode_to_buffer_exn t b; Buffer.to_bytes b
 
   let encode t = try Some (encode_exn t) with Simple_string_contains_CR_or_LF -> None
 
@@ -51,13 +51,13 @@ module Resp = struct
 
   let check b i c = if b.[i] <> c then raise Invalid_encoding
 
-  let find_and_skip_crlf b i = let j = String.index_from b i '\r' in check b (j+1) '\n'; j+2
+  let find_and_skip_crlf b i = let j = Bytes.index_from b i '\r' in check b (j+1) '\n'; j+2
 
   let decode_length b = let rec loop n i = if b.[i] <> '\r' then loop (10*n+(Char.code b.[i]-48)) (i+1) else (check b (i+1) '\n';i+2,n) in loop 0
 
-  let decode_simple_string b i = find_and_skip_crlf b i |> fun j -> j,String.sub b i (j-i-2)
+  let decode_simple_string b i = find_and_skip_crlf b i |> fun j -> j,Bytes.sub b i (j-i-2)
 
-  let decode_bulk_string b i = let j,n = decode_length b i in let s = String.sub b j n in check b (j+n) '\r';check b (j+n+1) '\n'; j+n+2,s
+  let decode_bulk_string b i = let j,n = decode_length b i in let s = Bytes.sub b j n in check b (j+n) '\r';check b (j+n+1) '\n'; j+n+2,s
 
   let rec decode_array b i =
     let rec loop acc j n = if n = 0 then j,acc else let j,t = decode_from b j in loop (t::acc) j (n-1) in
@@ -77,7 +77,7 @@ module Resp = struct
 
   let decode_exn b =
     let i,t = try decode_from b 0 with _ -> raise Invalid_encoding
-    in if i <> String.length b then raise (Trailing_garbage (t,i)) else t
+    in if i <> Bytes.length b then raise (Trailing_garbage (t,i)) else t
 
   let decode b = try Some (decode_exn b) with Invalid_encoding -> None
 

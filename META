@@ -1,0 +1,6 @@
+name="redis-protocol"
+description="A tiny, self-contained implementation of the Redis Serialization Protocol (RESP) for OCaml"
+version="0.1.0"
+depends="ocamlfind"
+archive(byte)="redis_protocol.cma"
+archive(native)="redis_protocol.cmxa"
