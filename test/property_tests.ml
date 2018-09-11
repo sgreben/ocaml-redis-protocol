@@ -14,7 +14,7 @@ module Well_formed = struct
     for i = 0 to Array.length ts - 1 do
       let t = ts.(i) in
       let s = Resp.encode_exn t in
-      let n = Bytes.length s in
+      let n = String.length s in
       if n > !max_encoding_length then max_encoding_length := n;
       assert_equal ~actual:(Resp.decode_exn s) ~expected:t
     done
